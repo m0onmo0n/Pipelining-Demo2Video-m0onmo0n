@@ -1,0 +1,218 @@
+[
+  {
+    "actions": [
+      {
+        "cmd": "tv_listen_voice_indices -1",
+        "tick": 64
+      },
+      {
+        "cmd": "tv_listen_voice_indices_h -1",
+        "tick": 64
+      },
+      {
+        "cmd": "demo_gototick 3457",
+        "tick": 64
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 3457
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 3457
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 3948
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 3948
+      },
+      {
+        "cmd": "demo_gototick 8771",
+        "tick": 4247
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 8771
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 8771
+      },
+      {
+        "cmd": "demo_gototick 36229",
+        "tick": 9347
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 36229
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 36229
+      },
+      {
+        "cmd": "demo_gototick 44205",
+        "tick": 36805
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 44205
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 44205
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 44676
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 44676
+      },
+      {
+        "cmd": "demo_gototick 47760",
+        "tick": 44955
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 47760
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 47760
+      },
+      {
+        "cmd": "demo_gototick 49345",
+        "tick": 48336
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 49345
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 49345
+      },
+      {
+        "cmd": "demo_gototick 55596",
+        "tick": 49921
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 55596
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 55596
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 56245
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 56245
+      },
+      {
+        "cmd": "demo_gototick 64061",
+        "tick": 56701
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 64061
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 64061
+      },
+      {
+        "cmd": "demo_gototick 70326",
+        "tick": 64637
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 70326
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 70326
+      },
+      {
+        "cmd": "demo_gototick 76349",
+        "tick": 70902
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 76349
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 76349
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 77106
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 77106
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 77707
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 77707
+      },
+      {
+        "cmd": "demo_gototick 81995",
+        "tick": 78126
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 81995
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 81995
+      },
+      {
+        "cmd": "demo_gototick 85574",
+        "tick": 82571
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 85574
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 85574
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 86409
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 86409
+      },
+      {
+        "cmd": "spec_player 3",
+        "tick": 87242
+      },
+      {
+        "cmd": "spec_mode 1",
+        "tick": 87242
+      },
+      {
+        "cmd": "quit",
+        "tick": 87817
+      }
+    ]
+  }
+]
