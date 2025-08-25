@@ -1,8 +1,23 @@
-# CS Demo Processor
+# CS Demo Processor (Pipelined Edition)
 
 This program automates the process of downloading a Counter-Strike 2 demo, analyzing it, recording highlights of a specified player, and uploading the resulting video to YouTube. It runs as a continuous service with a web interface for queuing jobs, making it a complete, hands-free pipeline.
 
-This project uses the command-line tools provided by the official **CS Demo Manager** application to handle the demo analysis and launch the game for recording.
+This version uses a multi-stage, parallel processing pipeline to maximize efficiency, allowing it to download the next demo while recording the current one.
+
+---
+
+## ⚠️ System Requirements
+
+**IMPORTANT:** This application is extremely resource-intensive due to its parallel processing design. It runs multiple demanding tasks simultaneously (downloading, demo analysis, launching a modern video game, and screen recording). Running this on anything other than a high-end PC will likely result in poor performance, stuttering in the final video, and application instability.
+
+**Recommended High-End Specifications:**
+
+* **CPU**: A high-performance 6-core CPU or better (e.g., Intel Core i7/i9, AMD Ryzen 7/9 from a recent generation).
+* **RAM**: 32 GB is strongly recommended to handle the concurrent tasks smoothly.
+* **Storage**: A fast NVMe SSD is essential. The application performs heavy, simultaneous read/write operations that will be bottlenecked by a traditional HDD or SATA SSD.
+* **GPU**: A powerful, modern graphics card (e.g., NVIDIA GeForce RTX 3060 / AMD Radeon RX 6700 XT or newer) is required to run CS2 and OBS recording without performance degradation.
+
+---
 
 ## Installation Guide
 
@@ -20,9 +35,9 @@ Before you begin, you must manually install the following programs:
 
 1.  **Download**: Download this project as a ZIP file and extract it to a permanent location on your computer (e.g., `C:\CS-Demo-Processor`).
 2.  **Run the Installer**: From the main project folder, double-click the `install.bat` file. This will automatically:
-    * **Check for Python and Node.js**: If they are not installed or not in your system's PATH, the script will stop and provide you with a download link.
-    * **Install all dependencies** for this project.
-    * **Launch an interactive setup guide** that will help you create your `config.ini` file.
+    * Check for Python and Node.js (and provide download links if they are missing).
+    * Install all necessary dependencies for this project.
+    * Launch an interactive setup guide to help you create your `config.ini` file.
 
 ### Step 3: Authorize YouTube
 
@@ -31,6 +46,8 @@ After the installer finishes, you need to authorize the application with Google.
 1.  Open a terminal in the **`cs-demo-processor`** subfolder.
 2.  Run the command: `python setup_youtube_auth.py`
 3.  Follow the browser prompts to log in and grant permission.
+
+---
 
 ## How to Run the Application
 
