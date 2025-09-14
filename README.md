@@ -108,6 +108,23 @@ cswatch_auto/
 I've added timestamps, a copy yt link button, made the UI wider and changed the upload logic(title, description). OBS saves the file in a certain format, with timestamps and the script is expecting a certain type of naming scheme, which it then renames the same as the youtube title, and then uploads it to youtube.
 I've also added a retry button if the upload never started(sometimes obs takes forever to save to the file, in which case it can't upload, clicking the retry button will attempt to add the file to the upload que again, *if* the video file got renamed)
 
+whenever you open the web server it is named `Moon Moon's Demo2Video` and the header for the processor is `Moon Moon's Processing Plant`
+you can change those in the `index.html` file that resides in `cs-demo-processor\templates`, just open the file in notepad and find the lines near the top as shown below and chance them to whatever you feel like.
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+⚠️-->  <title>Moon Moon's Demo2Video</title> <-------------⚠️
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+⚠️--->  <h1>Moon Moon's Processing Plant</h1> <----⚠️
+```
+
 ## Settings
 
 ### OBS
