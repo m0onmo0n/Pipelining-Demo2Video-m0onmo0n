@@ -4,6 +4,8 @@ import configparser
 import logging
 import time
 import threading
+import datetime
+import requests
 
 import csdm_cli_handler
 import youtube_uploader
@@ -15,8 +17,49 @@ from web_server import (
     completed_jobs, run_web_server, save_results
 )
 
+SETTINGS_FILE = "settings.txt"
+
+def read_setting(key, default):
+    """Read key=value from settings.txt, fallback to default if missing."""
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    if k.strip().lower() == key.lower():
+                        return v.strip().strip('"').strip("'")
+    except FileNotFoundError:
+        pass
+    return default
+
+def wait_for_file_ready(filepath, timeout=60, check_interval=2):
+    """
+    Wait until a file is stable (not being written to).
+    """
+    logging.info(f"Waiting for OBS to finish writing {filepath}...")
+    start_time = time.time()
+    last_size = -1
+
+    while time.time() - start_time < timeout:
+        try:
+            current_size = os.path.getsize(filepath)
+            if current_size == last_size:  # size hasn't changed
+                logging.info(f"File {filepath} is ready.")
+                return True
+            last_size = current_size
+        except FileNotFoundError:
+            pass  # OBS might not have created it yet
+        time.sleep(check_interval)
+
+    raise TimeoutError(f"File {filepath} was not ready after {timeout} seconds.")
+
+
+
 def setup_logging():
-    log_dir = 'logs'
+    log_dir = os.path.normpath(read_setting("LOG_DIR", "logs"))
     os.makedirs(log_dir, exist_ok=True)
     log_filename = f"csdm_processor_{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
     log_filepath = os.path.join(log_dir, log_filename)
@@ -33,8 +76,12 @@ def prep_worker(config):
     """Worker for Stage 1: Download and Analyze Demos."""
     logging.info("Prep worker started.")
     try:
-        csdm_project_path = os.path.join(os.getcwd(), 'csdm-fork')
-        demos_folder = os.path.join(csdm_project_path, 'demos')
+        default_csdm = os.path.join(os.getcwd(), 'csdm-fork')
+        csdm_project_path = os.path.normpath(read_setting("CSDM_PROJECT_PATH", default_csdm))
+
+        default_demos = os.path.join(csdm_project_path, 'demos')
+        demos_folder = os.path.normpath(read_setting("DEMOS_FOLDER", default_demos))
+        
         os.makedirs(demos_folder, exist_ok=True)
         if not os.path.isdir(csdm_project_path):
             raise FileNotFoundError("The 'csdm-fork' directory was not found.")
@@ -114,11 +161,13 @@ def record_worker(config):
 
             obs.stop_recording()
             # UPDATED: Increased delay to 15 seconds to ensure file is saved.
-            logging.info("Waiting 15 seconds for OBS to save the video file...")
-            time.sleep(15)
+            logging.info("Waiting 25 seconds for OBS to save the video file...")
+            time.sleep(25)
 
+            # Attach the path to the recorded video so retries know what to upload
             upload_job = {**job}
             upload_queue.put(upload_job)
+
             logging.info(f"Recording successful for {suspect_id}. Added to upload queue.")
 
         except Exception as e:
@@ -145,39 +194,83 @@ def upload_worker(config):
     while True:
         job = upload_queue.get()
         suspect_id = job['suspect_steam_id']
+        file_path = job.get('file_path')  # <-- Retry jobs will set this
         status_upload.update({"status": "Processing", "step": f"Uploading for {suspect_id}"})
-        
-        youtube_link = "Upload Failed"
+
+        youtube_link = None
         try:
-            files = [os.path.join(output_folder, f) for f in os.listdir(output_folder) if f.endswith('.mp4')]
-            if not files:
-                raise FileNotFoundError("No .mp4 files found.")
-            
-            latest_file = max(files, key=os.path.getctime)
-            logging.info(f"Latest recording found: {latest_file}")
+            if file_path and os.path.exists(file_path):
+                latest_file = file_path
+                logging.info(f"Using retry file: {latest_file}")
+            else:
+                files = [os.path.join(output_folder, f) for f in os.listdir(output_folder) if f.endswith('.mp4')]
+                if not files:
+                    raise FileNotFoundError("No .mp4 files found.")
+                
+                latest_file = max(files, key=os.path.getctime)
+                logging.info(f"Latest recording found: {latest_file}")
+
+            # 🔹 Wait until OBS is done writing
+            wait_for_file_ready(latest_file)
+            time.sleep(120)  # keep long enough buffer
+
+            if not file_path:          
+                timestamp = time.strftime('%d-%m_%H-%M')
+                base_name = f"suspect {suspect_id} {timestamp}"
+                final_video_path = os.path.join(output_folder, f"{base_name}.mp4")
+                
+                counter = 1
+                while os.path.exists(final_video_path):
+                    final_video_path = os.path.join(output_folder, f"{base_name}_{counter}.mp4")
+                    counter += 1
+
+                # 🔹 Rename only after file is ready
+                os.rename(latest_file, final_video_path)
+                logging.info(f"Renamed video file: {final_video_path}")
+            else:
+                final_video_path = latest_file
             
             video_title = f"Suspected Cheater: {suspect_id} - Highlights"
-            link = youtube_uploader.upload_video(latest_file, video_title)
-            
-            if link:
-                youtube_link = link
+            youtube_link = youtube_uploader.upload_video(final_video_path, video_title)
+
+            if youtube_link:
                 logging.info("Upload complete!")
             else:
-                raise RuntimeError("Upload failed to return a URL.")
+                logging.error("Upload did not return a URL.")
 
         except Exception as e:
             logging.error(f"Upload stage failed for {suspect_id}: {e}")
-        
+            youtube_link = "Upload Failed"
+
         finally:
-            completed_jobs.append({
-                "suspect_steam_id": suspect_id,
-                "share_code": job['share_code'],
-                "youtube_link": youtube_link,
-                "submitted_by": job.get('submitted_by', 'N/A')
-            })
+            ts = time.time()
+            timestamp_str = datetime.datetime.fromtimestamp(ts).strftime('%d/%m-%Y %H:%M:%S')
+
+            # 🔹 Look for an existing completed job for this suspect_id
+            existing = next((j for j in completed_jobs if j["suspect_steam_id"] == suspect_id), None)
+
+            if existing:
+                # Update in-place (retry case)
+                logging.info(f"Updating existing completed job for Steam ID {suspect_id}")
+                existing.update({
+                    "timestamp": timestamp_str,
+                    "youtube_link": youtube_link or "Upload Failed",
+                })
+            else:
+                # First time completion (normal case)
+                logging.info(f"Adding new completed job for Steam ID {suspect_id}")
+                completed_jobs.append({
+                    "timestamp": timestamp_str,
+                    "suspect_steam_id": suspect_id,
+                    "share_code": job.get('share_code', 'N/A'),
+                    "youtube_link": youtube_link or "Upload Failed",
+                    "submitted_by": job.get('submitted_by', 'N/A')
+                })
+
             save_results()
             status_upload.update({"status": "Idle", "step": "Waiting for recorded videos..."})
             upload_queue.task_done()
+
 
 
 if __name__ == '__main__':

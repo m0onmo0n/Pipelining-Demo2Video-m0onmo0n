@@ -5,6 +5,7 @@ from collections import deque
 import os
 import json
 from threading import Lock
+import re
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -90,6 +91,49 @@ def add_bulk():
     logging.info(f"Added {added_count} new jobs to Prep Queue from bulk submission.")
     return jsonify({"success": True, "message": f"Successfully added {added_count} demos to the queue."})
 
+
+def read_setting(key, default):
+    """Read key=value from settings.txt, fallback to default if missing."""
+    try:
+        with open("settings.txt", "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    if k.strip().lower() == key.lower():
+                        return v.strip().strip('"').strip("'")
+    except FileNotFoundError:
+        pass
+    return default
+
+UPLOAD_DIR = os.path.normpath(
+    read_setting("UPLOAD_DIR", r"E:\cswatch_auto\obs_videos")
+)
+    
+def find_file_by_steam_id(steam_id):
+    """
+    Locate the .mp4 file corresponding to a specific Steam ID
+    using the naming scheme: 'suspect {steam_id} *.mp4'.
+
+    Returns full path if found, else None.
+    """
+    pattern = re.compile(rf"^suspect\s+{re.escape(steam_id)}\s+.*\.mp4$", re.IGNORECASE)
+    candidates = []
+
+    for filename in os.listdir(UPLOAD_DIR):
+        if pattern.match(filename):
+            full_path = os.path.join(UPLOAD_DIR, filename)
+            candidates.append(full_path)
+
+    if not candidates:
+        return None
+
+    # If multiple matches, pick the most recent one
+    latest_file = max(candidates, key=os.path.getctime)
+    return latest_file
+
 @app.route('/status')
 def status():
     return jsonify({
@@ -101,6 +145,37 @@ def status():
         "queue_upload": list(upload_queue.queue),
         "results": list(completed_jobs) 
     })
+    
+@app.route('/retry', methods=['POST'])
+def retry():
+    data = request.get_json()
+    steam_id = data.get('steam_id')
+
+    if not steam_id:
+        return jsonify({"success": False, "message": "Missing Steam ID"}), 400
+
+    original_job = next((job for job in completed_jobs if job["suspect_steam_id"] == steam_id), None)
+
+    if not original_job:
+        return jsonify({"success": False, "message": "No completed job found for this Steam ID"}), 404
+
+    # Use the original file path (rebuild from naming scheme if needed)
+    # Locate the file associated with this Steam ID
+    file_path = find_file_by_steam_id(steam_id)  # You implement this
+
+    if not file_path:
+        return jsonify({"success": False, "message": "File not found"}), 404
+
+    retry_job = {
+        "file_path": file_path,
+        "suspect_steam_id": steam_id,
+        "share_code": original_job.get("share_code", "N/A"),
+        "submitted_by": original_job.get("submitted_by", "N/A")
+    }
+    upload_queue.put(retry_job)  # Add the file/job to the upload queue
+    logging.info(f"Retry job queued for Steam ID {steam_id}: {file_path}")
+
+    return jsonify({"success": True})
 
 def run_web_server():
     load_results()

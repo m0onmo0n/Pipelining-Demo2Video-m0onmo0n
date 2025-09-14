@@ -10,7 +10,7 @@ def analyze_demo(csdm_project_path, demo_path):
     """
     Runs the 'analyze' command on a demo file using the node CLI.
     """
-    command = ['node', 'out/cli.js', 'analyze', f'"{demo_path}"']
+    command = ['node', 'out/cli.js', 'analyze', demo_path]
     logging.info(f"Executing analysis command in '{csdm_project_path}': {' '.join(command)}")
     try:
         result = subprocess.run(

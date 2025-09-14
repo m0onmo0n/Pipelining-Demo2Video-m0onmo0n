@@ -9,10 +9,12 @@ import re
 
 API_URLS = [
     "https://csreplay.moon-moon.tech/decode",
+    "https://csreplay.fi/decode",
     "https://csreplay2.moon-moon.tech/decode",
-    "https://appeared-cite-reach-fy.trycloudflare.com"
+    "https://scapi.csreplay.xyz/decode",
+    "https://previously-eva-frank-excessive.trycloudflare.com/decode"
+    
 ]
-
 def parse_share_code(share_link_or_code):
     """Extracts the match share code from a full steam link or just the code."""
     match = re.search(r'(CSGO(-[A-Za-z0-9]{5}){5})', share_link_or_code)

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Norton's Demo2Video</title>
+    <title>Moon Moon's Demo2Video</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Norton's Demo2Video</h1>
+        <h1>Moon Moon's Processing Plant</h1>
 
         <!-- UPDATED: Status grid for all three workers -->
         <div class="status-grid">
@@ -72,6 +72,7 @@
             <table id="results-table">
                 <thead>
                     <tr>
+						<th>Timestamp</th>
                         <th>Suspect Steam64 ID</th>
                         <th>Share Code</th>
                         <th>Submitted By</th>
@@ -99,6 +100,28 @@
                 });
             }
         }
+		async function retryUpload(steamId) {
+    try {
+        const response = await fetch('/retry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ steam_id: steamId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log(`Retry triggered for Steam ID: ${steamId}`);
+            alert(`Retry started for Steam ID: ${steamId}`);
+        } else {
+            console.error('Retry failed:', data.message);
+            alert(`Retry failed: ${data.message}`);
+        }
+    } catch (err) {
+        console.error('Retry request error:', err);
+        alert('Retry request failed. See console for details.');
+    }
+}
 
         async function updateStatus() {
             try {
@@ -118,38 +141,73 @@
                 renderQueue('queue-record-list', 'queue-record-count', data.queue_record);
                 renderQueue('queue-upload-list', 'queue-upload-count', data.queue_upload);
 
-                // Update results table
-                const resultsBody = document.getElementById('results-body');
-                resultsBody.innerHTML = ''; 
-                if (data.results && data.results.length > 0) {
-                    data.results.forEach(result => {
-                        const row = resultsBody.insertRow(0);
-                        const cell1 = row.insertCell(0);
-                        const cell2 = row.insertCell(1);
-                        const cell3 = row.insertCell(2);
-                        const cell4 = row.insertCell(3);
+				// Update results table
+				const resultsBody = document.getElementById('results-body');
+				resultsBody.innerHTML = ''; 
+				if (data.results && data.results.length > 0) {
+					data.results.forEach(result => {
+						const row = resultsBody.insertRow(0);
+						const cell1 = row.insertCell(0);
+						const cell2 = row.insertCell(1);
+						const cell3 = row.insertCell(2);
+						const cell4 = row.insertCell(3);
+						const cell5 = row.insertCell(4);
 
-                        cell1.textContent = result.suspect_steam_id;
-                        cell2.textContent = result.share_code;
-                        cell3.textContent = result.submitted_by;
-                        
-                        const link = document.createElement('a');
-                        link.href = result.youtube_link;
-                        link.textContent = 'Watch Video';
-                        link.target = '_blank';
-                        
-                        if (result.youtube_link === 'Upload Failed') {
-                            link.href = '#';
-                            link.textContent = 'Upload Failed';
-                            link.style.color = '#cf6679';
-                            link.style.pointerEvents = 'none';
-                        }
-                        cell4.appendChild(link);
-                    });
+						cell1.textContent = result.timestamp;
+						cell2.textContent = result.suspect_steam_id;
+						cell3.textContent = result.share_code;
+						cell4.textContent = result.submitted_by;
+
+						// Clear cell4
+						cell5.innerHTML = '';
+						
+						// Show YouTube link + copy button if success
+						if (result.youtube_link && result.youtube_link !== 'Upload Failed') {
+							const link = document.createElement('a');
+							link.href = result.youtube_link;
+							link.textContent = 'Watch Video';
+							link.target = '_blank';
+							cell5.appendChild(link);
+
+							const copyBtn = document.createElement('div');
+							copyBtn.textContent = '📋';
+							copyBtn.className = 'clipboard-button';
+							copyBtn.title = 'Copy link';
+							copyBtn.onclick = () => {
+								navigator.clipboard.writeText(result.youtube_link)
+									.then(() => {
+										// Change icon to ✅ temporarily
+										copyBtn.textContent = '✅';
+										setTimeout(() => {
+											copyBtn.textContent = '📋';
+                                    }, 1500);
+                                })
+                                .catch(err => console.error('Copy failed', err));
+                        };
+                        cell5.appendChild(copyBtn);
+                    } else {
+						const failedText = document.createElement('span');
+						failedText.textContent = 'Upload Failed';
+						cell5.appendChild(failedText);
+						
+						
+						// Upload failed: show retry button
+						const retryBtn = document.createElement('div');
+						retryBtn.textContent = '🔄';
+						retryBtn.className = 'retry-button';
+						retryBtn.title = 'Retry upload';
+						retryBtn.onclick = () => retryUpload(result.suspect_steam_id); // send Steam ID
+						cell5.appendChild(retryBtn);
+						// Just show failed text
+                    //  cell5.textContent = 'Upload Failed';
+                    //}
+					};
+				});	
+
                 } else {
                     const row = resultsBody.insertRow(0);
                     const cell = row.insertCell(0);
-                    cell.colSpan = 4;
+                    cell.colSpan = 5;
                     cell.textContent = 'No completed jobs yet.';
                     cell.style.textAlign = 'center';
                 }
@@ -212,7 +270,7 @@
             updateStatus();
         });
 
-        setInterval(updateStatus, 3000);
+        setInterval(updateStatus, 30000);
         updateStatus();
     </script>
 </body>

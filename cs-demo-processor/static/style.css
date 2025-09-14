@@ -11,7 +11,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1500px;
     background-color: #1e1e1e;
     border-radius: 8px;
     padding: 25px;
@@ -136,3 +136,27 @@ button:hover {
 .results-container a:hover {
     text-decoration: underline;
 }
+
+.clipboard-button, .retry-button {
+    display: inline-block;               /* Sit inline with text */
+    cursor: pointer;               /* Clickable */
+    padding: 0;
+    margin-left: 8px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    line-height: 1;                /* Align with surrounding text */
+    font-family: initial;          /* Let emoji render in system font */
+    font-size: 1em;                /* Match text size, optional */
+    color: initial;                /* Don’t force color */
+	width: fit-content;
+	vertical-align: middle;
+	text-align: center;
+	transition: transform 0.2s ease;
+}
+
+
+.clipboard-button:hover {
+    transform: scale(1.2);  /* Slight pop on hover */
+}
+
