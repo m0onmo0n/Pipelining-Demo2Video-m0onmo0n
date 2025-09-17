@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> EVERYTHING is currently broken cuz valve
+
 # CS Demo Processor (Pipelined Edition) (m0on mo0n edition)
 
 This program automates the process of downloading a Counter-Strike 2 demo, analyzing it, recording highlights of a specified player, and uploading the resulting video to YouTube. It runs as a continuous service with a web interface for queuing jobs, making it a complete, hands-free pipeline.
