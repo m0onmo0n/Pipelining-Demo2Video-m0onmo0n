@@ -95,7 +95,7 @@ def main():
 
     # --- Get Main App Settings ---
     print("--- Step 2: Main Application Configuration ---\n")
-    output_folder = get_valid_path("Enter the full path to your OBS output folder (e.g., Z:\\Videos\\OBS):\n> ")
+    output_folder = get_valid_path("Enter the full path to your OBS output folder (e.g., E:\\cswatch_auto\\obs_videos):\n> ")
     obs_host = input("Enter the OBS WebSocket host (usually 'localhost'):\n> ") or 'localhost'
     obs_port = input("Enter the OBS WebSocket port (usually '4455'):\n> ") or '4455'
 
