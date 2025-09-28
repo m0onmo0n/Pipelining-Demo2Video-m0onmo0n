@@ -42,7 +42,7 @@ def wait_for_file_ready(filepath, timeout=60, check_interval=2):
 
 
 def setup_logging():
-    log_dir = os.path.normpath(read_setting("LOG_DIR", "logs"))
+    log_dir = 'logs'
     os.makedirs(log_dir, exist_ok=True)
     log_filename = f"csdm_processor_{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
     log_filepath = os.path.join(log_dir, log_filename)
@@ -58,7 +58,7 @@ def setup_logging():
 def prep_worker(config):
     """Worker for Stage 1: Download and Analyze Demos."""
     logging.info("Prep worker started.")
-    
+
     config = configparser.ConfigParser()
     config.read('config.ini')
     try:
