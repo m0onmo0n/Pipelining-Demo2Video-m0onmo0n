@@ -17,23 +17,7 @@ from web_server import (
     completed_jobs, run_web_server, save_results
 )
 
-SETTINGS_FILE = "settings.txt"
 
-def read_setting(key, default):
-    """Read key=value from settings.txt, fallback to default if missing."""
-    try:
-        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    if k.strip().lower() == key.lower():
-                        return v.strip().strip('"').strip("'")
-    except FileNotFoundError:
-        pass
-    return default
     
 def wait_for_file_ready(filepath, timeout=60, check_interval=2):
     """
@@ -79,17 +63,14 @@ def prep_worker(config):
     config = configparser.ConfigParser()
     config.read('config.ini')
     try:
-        default_csdm = config['Paths']['csdm_project_path']
-        csdm_project_path = os.path.normpath(read_setting("CSDM_PROJECT_PATH", default_csdm))
-
-        default_demos = config['Paths']['demos_folder']
-        demos_folder = os.path.normpath(read_setting("DEMOS_FOLDER", default_demos))
-
-        os.makedirs(demos_folder, exist_ok=True)
-        if not os.path.isdir(csdm_project_path):
-            raise FileNotFoundError("The 'csdm-fork' directory was not found.")
-    except (KeyError, FileNotFoundError) as e:
-        logging.error(f"Prep worker configuration error: {e}")
+        csdm_project_path = config['Paths']['csdm_project_path']
+        demos_folder = config['Paths']['demos_folder']
+        output_folder = config['Paths']['output_folder']
+        obs_host = config['OBS']['host']
+        obs_port = int(config['OBS']['port'])
+        video_generate_only = config['Video'].getboolean('video_generate_only', True)
+    except KeyError as e:
+        logging.error(f"Configuration error: Missing key {e} in config.ini.")
         return
 
     while True:
