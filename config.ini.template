@@ -1,17 +1,18 @@
 [Paths]
+# The folder where your csdm project(fork) is located
+csdm_project_path = E:\area51\cswatch_auto\csdm-fork
+
 # The folder where downloaded demo files (.dem) will be stored.
 # Example: Z:\Github\Demo2Video\demos
-demos_folder = C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo\replays
+demos_folder = E:\area51\cswatch_auto\demos
 
 # The folder where OBS saves recorded videos (.mp4).
 # IMPORTANT: This path MUST match the "Recording Path" you set in OBS.
 # In OBS, go to File -> Settings -> Output -> Recording -> Recording Path
-# Example: Z:\Github\Demo2Video\videos
-output_folder = 
+output_folder = E:\area51\cswatch_auto\obs_videos
 
 [OBS]
-# The host and port for the obs-websocket plugin.
-# These should match the settings in OBS under Tools -> obs-websocket Settings.
+# The host and port for obs websocket.
 host = localhost
 port = 4455
 
@@ -20,4 +21,3 @@ port = 4455
 # Set to true to enable local video saving by default, false to upload to YouTube by default
 # This can be overridden per-job using the youtube_upload URL parameter
 video_generate_only = true
-
