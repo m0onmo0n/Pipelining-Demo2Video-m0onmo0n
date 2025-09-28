@@ -17,7 +17,24 @@ from web_server import (
     completed_jobs, run_web_server, save_results
 )
 
+SETTINGS_FILE = "settings.txt"
 
+def read_setting(key, default):
+    """Read key=value from settings.txt, fallback to default if missing."""
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    if k.strip().lower() == key.lower():
+                        return v.strip().strip('"').strip("'")
+    except FileNotFoundError:
+        pass
+    return default
+    
 def wait_for_file_ready(filepath, timeout=60, check_interval=2):
     """
     Wait until a file is stable (not being written to).
